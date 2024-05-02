@@ -2,6 +2,9 @@
 
 Simple shell script to embed a preseed.cfg into a given Debian ISO file. Packaged using Docker.
 
+Source code is tiny and hopefully readable, so it should be easy to audit and/or adjust things
+to your needs if necessary.
+
 ## Requirements
 
 - Docker
