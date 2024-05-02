@@ -22,43 +22,24 @@ _log_generic() {
 
 # Main functions
 make_bootable_iso() {
-	src_iso="${1:?}"
-	iso_fs_dir="${2:?}"
-	dest_iso="${3:?}"
+	local src_iso_path="${1:?}"
+	local iso_fs_dir="${2:?}"
+	local dest_iso_path="${3:?}"
 
 	_info "Creating iso file..."
 
-	cwd="$(pwd)"
 	cd "$iso_fs_dir" || return
 
-	# Extract MBR template file to disk
-	# MBR_TEMPLATE="/tmp/isohdpfx.bin"
-	# dd if="$src_iso" bs=1 count=432 of="$MBR_TEMPLATE"
-
-	# this needs root permissions for some reason, maybe to copy permissions perfectly into new iso?
-	# sudo xorriso -as mkisofs \
-	# 	-r \
-	# 	-V 'Debian 12.5.0 amd64 n' \
-	# 	-o "${cwd}/$dest_iso" \
-	# 	-isohybrid-mbr $MBR_TEMPLATE \
-	# 	-b isolinux/isolinux.bin \
-	# 	-c isolinux/boot.cat \
-	# 	-boot-load-size 4 -boot-info-table -no-emul-boot \
-	# 	-eltorito-alt-boot \
-	# 	-e boot/grub/efi.img \
-	# 	-no-emul-boot -isohybrid-gpt-basdat \
-	# 	.
-
-	xorriso -indev "${cwd}/$src_iso" \
+	xorriso -indev "$src_iso_path" \
 		-map ./isolinux/isolinux.cfg '/isolinux/isolinux.cfg' \
 		-map ./md5sum.txt '/md5sum.txt' \
 		-map ./install.amd/gtk/initrd.gz '/install.amd/gtk/initrd.gz' \
 		-boot_image isolinux dir=/isolinux \
-		-outdev "${cwd}/$dest_iso"
+		-outdev "$dest_iso_path"
 }
 
 regenerate_md5sum() {
-	iso_fs_dir="${1:?}"
+	local iso_fs_dir="${1:?}"
 
 	_info "Regenerating md5sum..."
 
@@ -71,9 +52,9 @@ regenerate_md5sum() {
 }
 
 add_preseed() {
-	iso_fs_dir="${1:?}"
-	preseed_file="${2:?}"
-	INSTALL_DIR="install.amd"
+	local iso_fs_dir="${1:?}"
+	local preseed_file="${2:?}"
+	local INSTALL_DIR="install.amd"
 
 	_info "Adding preseed file..."
 
@@ -89,8 +70,8 @@ add_preseed() {
 }
 
 extract_iso() {
-	src_iso="${1:?}"
-	dest_dir="${2:?}"
+	local src_iso="${1:?}"
+	local dest_dir="${2:?}"
 
 	_info "Extracting iso..."
 
@@ -104,8 +85,8 @@ main() {
 	: "${DEST_DIR:?}"
 	: "${PRESEED_FILE_PATH:?}"
 
-	tmp_iso_files_dir="${DEST_DIR}/extracted-iso"
-	dest_iso="${DEST_DIR}/debian-preseed.iso"
+	local tmp_iso_files_dir="${DEST_DIR}/extracted-iso"
+	local dest_iso_path="${DEST_DIR}/debian-preseed.iso"
 
 	# Make sure tmp directory doesn't exist yet
 	if [ -e "$tmp_iso_files_dir" ]; then
@@ -117,7 +98,7 @@ main() {
 	(extract_iso "$SRC_ISO_PATH" "$tmp_iso_files_dir")
 	(add_preseed "$tmp_iso_files_dir" "$PRESEED_FILE_PATH")
 	(regenerate_md5sum "${tmp_iso_files_dir}")
-	(make_bootable_iso "$SRC_ISO_PATH" "${tmp_iso_files_dir}" "${dest_iso}")
+	(make_bootable_iso "$SRC_ISO_PATH" "${tmp_iso_files_dir}" "${dest_iso_path}")
 
 	# $tmp_iso_files_dir should now be unecessary, should I just use a temp directory, clean it up after, and not require it as an arg?
 }
