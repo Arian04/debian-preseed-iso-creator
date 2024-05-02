@@ -1,5 +1,7 @@
 #!/bin/sh
 
+# This is just a tiny wrapper script so you don't have to memorize arguments
+
 LOCAL_ISO_PATH=${1:?}
 LOCAL_PRESEED_PATH=${2:?}
 OUTPUT_DIR=${3:?}
