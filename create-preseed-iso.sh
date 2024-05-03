@@ -31,7 +31,7 @@ make_bootable_iso() {
 	cd "$iso_fs_dir" || return
 
 	xorriso -indev "$src_iso_path" \
-		-map ./isolinux/isolinux.cfg '/isolinux/isolinux.cfg' \
+		-map ./isolinux/ '/isolinux/' \
 		-map ./md5sum.txt '/md5sum.txt' \
 		-map ./install.amd/initrd.gz '/install.amd/initrd.gz' \
 		-boot_image isolinux dir=/isolinux \
@@ -49,6 +49,27 @@ regenerate_md5sum() {
 	find -follow -type f ! -name md5sum.txt -print0 | xargs -0 md5sum >md5sum.txt
 
 	chmod -w md5sum.txt
+}
+
+edit_isolinux_config() {
+	local iso_fs_dir="${1:?}"
+
+	_info "Editing isolinux config file..."
+
+	local ISOLINUX_CONFIG_DIR="${iso_fs_dir}/isolinux"
+	local ISOLINUX_MAIN_CONFIG_PATH="${ISOLINUX_CONFIG_DIR}/isolinux.cfg"
+	local ISOLINUX_MENU_CONFIG_PATH="${ISOLINUX_CONFIG_DIR}/menu.cfg"
+
+	# lower timeout to 1 (value is given as 10ths of a second, so this timeout is very short)
+	sed -i -e '/timeout / s/ .*/ 1/' "$ISOLINUX_MAIN_CONFIG_PATH"
+
+	# disable graphical install because preseeding is set up for text-based install
+	# and this also makes it default to text-based rather than graphical.
+	sed -i '/include gtk.cfg/d' "${ISOLINUX_MENU_CONFIG_PATH}"
+
+	# stop these included files from overriding our timeout. also disables speech synthesis.
+	sed -i '/include spkgtk.cfg/d' "${ISOLINUX_MENU_CONFIG_PATH}"
+	sed -i '/include spk.cfg/d' "${ISOLINUX_MENU_CONFIG_PATH}"
 }
 
 add_preseed() {
@@ -97,6 +118,7 @@ main() {
 	# Running these in subshells so any directory changes within functions don't affect eachother
 	(extract_iso "$SRC_ISO_PATH" "$tmp_iso_files_dir")
 	(add_preseed "$tmp_iso_files_dir" "$PRESEED_FILE_PATH")
+	(edit_isolinux_config "$tmp_iso_files_dir")
 	(regenerate_md5sum "${tmp_iso_files_dir}")
 	(make_bootable_iso "$SRC_ISO_PATH" "${tmp_iso_files_dir}" "${dest_iso_path}")
 
