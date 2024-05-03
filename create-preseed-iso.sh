@@ -33,7 +33,7 @@ make_bootable_iso() {
 	xorriso -indev "$src_iso_path" \
 		-map ./isolinux/isolinux.cfg '/isolinux/isolinux.cfg' \
 		-map ./md5sum.txt '/md5sum.txt' \
-		-map ./install.amd/gtk/initrd.gz '/install.amd/gtk/initrd.gz' \
+		-map ./install.amd/initrd.gz '/install.amd/initrd.gz' \
 		-boot_image isolinux dir=/isolinux \
 		-outdev "$dest_iso_path"
 }
