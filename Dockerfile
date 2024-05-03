@@ -55,9 +55,3 @@ FROM scratch
 
 ARG DEST_DIR
 COPY --from=builder ${DEST_DIR}/debian-preseed.iso /
-
-# WORKDIR ${DEST_DIR}
-#
-# # Set entrypoint as a shell so it can expand the env var in CMD
-# ENTRYPOINT [ "sh", "-c" ]
-# CMD [ "/bin/${SCRIPT_NAME}" ]
