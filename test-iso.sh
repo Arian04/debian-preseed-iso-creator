@@ -15,7 +15,7 @@ qemu-system-x86_64 \
 	-accel kvm \
 	-m 2G \
 	-nic user,model=virtio-net-pci \
-	-boot d -cdrom "$ISO_FILE_PATH" \
+	-boot once=d -cdrom "$ISO_FILE_PATH" \
 	"$VM_IMG_PATH"
 
 echo
